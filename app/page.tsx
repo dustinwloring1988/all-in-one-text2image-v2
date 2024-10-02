@@ -29,6 +29,7 @@ import {
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { supabase } from '@/lib/supabase'
+import { loadStripe } from '@stripe/stripe-js'
 
 type User = {
   id: string;
@@ -61,6 +62,7 @@ export default function AdvancedTextToImageGenerator() {
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false)
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
   const [showTopOffModal, setShowTopOffModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   // Form states
   const [email, setEmail] = useState('')
@@ -82,6 +84,18 @@ export default function AdvancedTextToImageGenerator() {
       }
     }
     checkSession()
+
+    // Check for successful payment
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    if (sessionId) {
+      // Payment was successful
+      setShowTopOffModal(false);
+      setShowSuccessModal(true);
+      // Here you should also update the user's credits in your database and local state
+      // For example:
+      // updateUserCredits(sessionId);
+    }
   }, [])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -281,19 +295,31 @@ export default function AdvancedTextToImageGenerator() {
     }
   }
 
-  const handleBuyCredits = (amount: number) => {
-    if (user) {
-      const newCredits = user.credits + amount * 10
-      if (newCredits > 300) {
-        toast.error('Maximum credit limit (300) exceeded.')
-        return
+  const handleBuyCredits = async (amount: number) => {
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      const { sessionId } = await response.json();
+
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+          console.error(error);
+          toast.error('Failed to initiate checkout. Please try again.');
+        }
       }
-      const updatedUser = { ...user, credits: newCredits }
-      setUser(updatedUser)
-      localStorage.setItem('user', JSON.stringify(updatedUser))
-      toast.success(`Successfully purchased ${amount * 10} credits!`)
+    } catch (error) {
+      console.error('Error buying credits:', error);
+      toast.error('Failed to process payment. Please try again.');
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -684,6 +710,21 @@ export default function AdvancedTextToImageGenerator() {
               </div>
             </div>
             <p className="text-sm text-gray-500">1 credit = $0.10. Maximum 300 credits.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Payment Successful</DialogTitle>
+            <DialogDescription>
+              Thank you for your purchase! Your credits have been added to your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 text-center">
+            <Button onClick={() => setShowSuccessModal(false)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>

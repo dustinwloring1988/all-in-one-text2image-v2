@@ -38,6 +38,21 @@ type User = {
   credits: number;
 }
 
+const fetchUserCredits = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('user_credits')
+    .select('credits')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching user credits:', error);
+    return 0;
+  }
+
+  return data?.credits || 0;
+};
+
 export default function AdvancedTextToImageGenerator() {
   const [prompt, setPrompt] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -74,11 +89,12 @@ export default function AdvancedTextToImageGenerator() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        const userCredits = await fetchUserCredits(session.user.id);
         setUser({
           id: session.user.id,
           name: session.user.user_metadata.name || 'User',
           email: session.user.email || '',
-          credits: 10, // You might want to fetch this from a database
+          credits: userCredits,
         })
         setIsLoggedIn(true)
       }
@@ -175,20 +191,13 @@ export default function AdvancedTextToImageGenerator() {
       })
       if (error) throw error
 
-      // Fetch user credits
-      const { data: creditsData, error: creditsError } = await supabase
-        .from('user_credits')
-        .select('credits')
-        .eq('user_id', data.user?.id)
-        .single()
-
-      if (creditsError) throw creditsError
+      const userCredits = await fetchUserCredits(data.user?.id || '');
 
       setUser({
         id: data.user?.id || '',
         name: data.user?.user_metadata?.name || 'User',
         email: data.user?.email || '',
-        credits: creditsData.credits
+        credits: userCredits,
       })
       setIsLoggedIn(true)
       setShowLoginModal(false)

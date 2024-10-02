@@ -297,12 +297,33 @@ export default function AdvancedTextToImageGenerator() {
   }
 
   const handleBuyCredits = async (amount: number) => {
-    // Remove Stripe integration
-    // const response = await fetch('/api/create-checkout-session', { ... });
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount, userId: user?.id }),
+      });
 
-    // Directly update user credits
-    amount = amount * 10;
-    handleCreditUpdate(amount); // Call the credit update function directly
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { sessionId } = await response.json();
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+      
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+          console.error('Stripe redirect error:', error);
+          toast.error('Failed to redirect to checkout. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast.error('Failed to initiate checkout. Please try again.');
+    }
   };
 
   const handleCreditUpdate = async (creditAmount: number) => {

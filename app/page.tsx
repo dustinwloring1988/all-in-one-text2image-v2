@@ -85,6 +85,8 @@ export default function AdvancedTextToImageGenerator() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [name, setName] = useState('')
 
+  const [creditUpdateProcessed, setCreditUpdateProcessed] = useState(false)
+
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -104,7 +106,7 @@ export default function AdvancedTextToImageGenerator() {
     // Check for successful payment
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
-    if (sessionId && user) {
+    if (sessionId && user && !creditUpdateProcessed) {
       // Payment was successful
       setShowTopOffModal(false);
       setShowSuccessModal(true);
@@ -122,6 +124,7 @@ export default function AdvancedTextToImageGenerator() {
         if (data.success) {
           setUser({ ...user, credits: data.newCredits });
           toast.success(`Credits updated successfully! New balance: ${data.newCredits}`);
+          setCreditUpdateProcessed(true);
         } else {
           toast.error('Failed to update credits. Please contact support.');
         }
@@ -131,7 +134,7 @@ export default function AdvancedTextToImageGenerator() {
         toast.error('Failed to update credits. Please contact support.');
       });
     }
-  }, [user])
+  }, [user, creditUpdateProcessed])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

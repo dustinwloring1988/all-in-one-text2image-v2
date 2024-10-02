@@ -10,6 +10,21 @@ export async function POST(request: Request) {
   const { userId, sessionId } = await request.json();
 
   try {
+    // Check if this session has already been processed
+    const { data: existingSession, error: sessionError } = await supabase
+      .from('processed_sessions')
+      .select('id')
+      .eq('session_id', sessionId)
+      .single();
+
+    if (sessionError && sessionError.code !== 'PGRST116') {
+      throw sessionError;
+    }
+
+    if (existingSession) {
+      return NextResponse.json({ success: false, error: 'Session already processed' }, { status: 400 });
+    }
+
     // Retrieve the Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -36,6 +51,11 @@ export async function POST(request: Request) {
         .eq('user_id', userId);
 
       if (updateError) throw updateError;
+
+      // Mark this session as processed
+      await supabase
+        .from('processed_sessions')
+        .insert({ session_id: sessionId, user_id: userId });
 
       return NextResponse.json({ success: true, newCredits });
     } else {

@@ -27,8 +27,9 @@ export async function POST(req: Request) {
 
     if (userId && credits) {
       try {
-        await updateUserCredits(userId, credits);
-        console.log(`Credits updated for user ${userId}: +${credits}`);
+        // Update user credits in Supabase
+        const newCredits = await updateUserCredits(userId, credits);
+        console.log(`Credits updated for user ${userId}: +${credits}. New balance: ${newCredits}`);
       } catch (error) {
         console.error('Error updating user credits:', error);
         return NextResponse.json({ error: 'Failed to update user credits' }, { status: 500 });

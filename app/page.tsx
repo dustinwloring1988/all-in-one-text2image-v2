@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, User, Settings, LogOut } from "lucide-react"
+import { Loader2, User, Settings, LogOut, MoreHorizontal } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -313,6 +313,20 @@ export default function AdvancedTextToImageGenerator() {
     }
   };
 
+  const handleDownload = (imageUrl: string, format: string) => {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `generated-image.${format}`; // Use the correct format for the filename
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDelete = (index: number) => {
+    setGeneratedImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    toast.success('Image deleted successfully!');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
@@ -516,9 +530,24 @@ export default function AdvancedTextToImageGenerator() {
             <h2 className="text-2xl font-bold mb-6">Generated Images</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {generatedImages.map((imageUrl, index) => (
-                <Card key={index} className="bg-gray-800 border-gray-700 overflow-hidden">
+                <Card key={index} className="bg-gray-800 border-gray-700 overflow-hidden relative">
                   <CardContent className="p-0">
                     <img src={imageUrl} alt={`Generated image ${index + 1}`} className="w-full h-auto" />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="absolute top-2 right-2">
+                          <MoreHorizontal className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end">
+                        <DropdownMenuItem onClick={() => handleDownload(imageUrl, outputFormat)}>
+                          Download
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDelete(index)}>
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </CardContent>
                 </Card>
               ))}

@@ -22,8 +22,8 @@ ImageAI is a Next.js-based web application that harnesses the power of AI to cre
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/dustinwloring1988/all-in-one-text2image.git
-   cd all-in-one-text2image
+   git clone https://github.com/dustinwloring1988/all-in-one-text2image-v2.git
+   cd all-in-one-text2image-v2
    ```
 
 2. Install dependencies:

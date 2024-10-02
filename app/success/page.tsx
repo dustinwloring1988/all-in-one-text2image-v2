@@ -1,20 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 const SuccessPage = () => {
   const router = useRouter(); // This line is now valid
 
   useEffect(() => {
-    if (router) { // Check if router is defined
-      // Redirect to the main page after 5 seconds
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, 5000);
+    // Redirect to the main page after 5 seconds
+    const timer = setTimeout(() => {
+      router.push('/');
+    }, 5000);
 
-      return () => clearTimeout(timer); // Cleanup the timer on unmount
-    }
+    return () => clearTimeout(timer); // Cleanup the timer on unmount
   }, [router]);
 
   return (

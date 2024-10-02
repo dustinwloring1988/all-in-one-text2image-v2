@@ -104,19 +104,34 @@ export default function AdvancedTextToImageGenerator() {
     // Check for successful payment
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
-    if (sessionId) {
+    if (sessionId && user) {
       // Payment was successful
       setShowTopOffModal(false);
       setShowSuccessModal(true);
-      if (user) {
-        // Fetch the updated credit amount from the server
-        fetchUserCredits(user.id).then((newCredits) => {
-          setUser({ ...user, credits: newCredits });
-          toast.success(`Credits updated successfully! New balance: ${newCredits}`);
-        });
-      }
+      
+      // Update credits
+      fetch('/api/update-credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id, sessionId }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          setUser({ ...user, credits: data.newCredits });
+          toast.success(`Credits updated successfully! New balance: ${data.newCredits}`);
+        } else {
+          toast.error('Failed to update credits. Please contact support.');
+        }
+      })
+      .catch(error => {
+        console.error('Error updating credits:', error);
+        toast.error('Failed to update credits. Please contact support.');
+      });
     }
-  }, [])
+  }, [user])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

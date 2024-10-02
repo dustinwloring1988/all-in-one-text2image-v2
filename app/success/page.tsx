@@ -4,16 +4,17 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const SuccessPage = () => {
-  // Remove the check for router being defined
   const router = useRouter(); // This line is now valid
 
   useEffect(() => {
-    // Redirect to the main page after 5 seconds
-    const timer = setTimeout(() => {
-      router.push('/');
-    }, 5000);
+    if (router) { // Check if router is defined
+      // Redirect to the main page after 5 seconds
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 5000);
 
-    return () => clearTimeout(timer); // Cleanup the timer on unmount
+      return () => clearTimeout(timer); // Cleanup the timer on unmount
+    }
   }, [router]);
 
   return (

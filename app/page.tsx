@@ -164,8 +164,7 @@ export default function AdvancedTextToImageGenerator() {
       const data = await response.json();
       setGeneratedImages(data);
       
-      // Update local user state
-      setUser({ ...user, credits: user.credits - creditCost });
+      // Show success toast after credits are updated
       toast.success(`Generated images successfully! Credits remaining: ${user.credits - creditCost}`);
     } catch (error) {
       console.error('Error generating images:', error);
@@ -298,32 +297,11 @@ export default function AdvancedTextToImageGenerator() {
   }
 
   const handleBuyCredits = async (amount: number) => {
-    try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount, userId: user?.id }), // Pass userId if user exists
-      });
+    // Remove Stripe integration
+    // const response = await fetch('/api/create-checkout-session', { ... });
 
-      const { sessionId } = await response.json();
-
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      if (stripe) {
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-        if (error) {
-          console.error(error);
-          toast.error('Failed to initiate checkout. Please try again.');
-        } else {
-          // Show success modal after successful payment
-          setShowSuccessModal(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error buying credits:', error);
-      toast.error('Failed to process payment. Please try again.');
-    }
+    // Directly update user credits
+    handleCreditUpdate(amount); // Call the credit update function directly
   };
 
   const handleCreditUpdate = async (creditAmount: number) => {

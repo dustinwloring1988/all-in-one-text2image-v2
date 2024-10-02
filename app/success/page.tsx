@@ -4,10 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const SuccessPage = () => {
-  const router = useRouter();
-
-  // Check if router is defined
-  if (!router) return null; // Prevents error if router is not available
+  // Remove the check for router being defined
+  const router = useRouter(); // This line is now valid
 
   useEffect(() => {
     // Redirect to the main page after 5 seconds

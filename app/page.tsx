@@ -301,6 +301,7 @@ export default function AdvancedTextToImageGenerator() {
     // const response = await fetch('/api/create-checkout-session', { ... });
 
     // Directly update user credits
+    amount = amount * 10;
     handleCreditUpdate(amount); // Call the credit update function directly
   };
 

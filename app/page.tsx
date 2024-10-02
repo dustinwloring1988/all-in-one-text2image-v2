@@ -30,6 +30,7 @@ import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { supabase, updateUserCredits } from '@/lib/supabase'
 import { loadStripe } from '@stripe/stripe-js'
+import { useRouter } from 'next/router'
 
 type User = {
   id: string;
@@ -54,6 +55,8 @@ const fetchUserCredits = async (userId: string) => {
 };
 
 export default function AdvancedTextToImageGenerator() {
+  const router = useRouter();
+
   const [prompt, setPrompt] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [aspectRatio, setAspectRatio] = useState('1:1')
@@ -125,6 +128,8 @@ export default function AdvancedTextToImageGenerator() {
           setUser({ ...user, credits: data.newCredits });
           toast.success(`Credits updated successfully! New balance: ${data.newCredits}`);
           setCreditUpdateProcessed(true);
+          // Clear the session_id from the URL
+          router.replace('/', undefined, { shallow: true });
         } else {
           toast.error('Failed to update credits. Please contact support.');
         }
@@ -134,7 +139,7 @@ export default function AdvancedTextToImageGenerator() {
         toast.error('Failed to update credits. Please contact support.');
       });
     }
-  }, [user, creditUpdateProcessed])
+  }, [user, creditUpdateProcessed, router])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

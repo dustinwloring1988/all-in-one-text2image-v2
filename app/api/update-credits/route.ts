@@ -10,21 +10,6 @@ export async function POST(request: Request) {
   const { userId, sessionId } = await request.json();
 
   try {
-    // Check if the session has already been processed
-    const { data: processedData, error: processedError } = await supabase
-      .from('processed_sessions')
-      .select('session_id')
-      .eq('session_id', sessionId)
-      .single();
-
-    if (processedError && processedError.code !== 'PGRST116') {
-      throw processedError; // Handle other errors
-    }
-
-    if (processedData) {
-      return NextResponse.json({ success: false, error: 'Session already processed' }, { status: 400 });
-    }
-
     // Retrieve the Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 

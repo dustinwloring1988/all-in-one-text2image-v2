@@ -31,14 +31,14 @@ export async function POST(request: Request) {
 
       // Update user credits in Supabase
       const userId = session.client_reference_id; // Get userId from the session
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('user_credits')
         .select('credits')
         .eq('user_id', userId)
         .single();
 
-      if (error) {
-        console.error('Error fetching user credits:', error);
+      if (fetchError) {
+        console.error('Error fetching user credits:', fetchError);
         return NextResponse.json({ error: 'Failed to fetch user credits' }, { status: 500 });
       }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         .from('processed_sessions')
         .insert({ session_id: session.id, user_id: userId });
 
-      console.log(`Credits updated for user ${userId}: ${newCredits}`);
+      console.log(`Credits updated for user ${userId}: ${creditsToAdd}`);
       break;
 
     default:

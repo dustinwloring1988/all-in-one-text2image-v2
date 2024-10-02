@@ -304,7 +304,7 @@ export default function AdvancedTextToImageGenerator() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ amount, userId: user?.id }), // Pass userId if user exists
       });
 
       const { sessionId } = await response.json();
@@ -315,6 +315,9 @@ export default function AdvancedTextToImageGenerator() {
         if (error) {
           console.error(error);
           toast.error('Failed to initiate checkout. Please try again.');
+        } else {
+          // Show success modal after successful payment
+          setShowSuccessModal(true);
         }
       }
     } catch (error) {

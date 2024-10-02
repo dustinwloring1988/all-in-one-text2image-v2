@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { supabase } from '@/lib/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-09-30.acacia',
 });
 
 export async function POST(request: Request) {
-  const { amount } = await request.json();
+  const { amount, userId } = await request.json();
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+      client_reference_id: userId, // Pass userId to identify the user
     });
 
     return NextResponse.json({ sessionId: session.id });

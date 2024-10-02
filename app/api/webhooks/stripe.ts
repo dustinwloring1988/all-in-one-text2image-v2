@@ -11,6 +11,7 @@ export async function POST(request: Request) {
   const body = await request.text();
 
   let event;
+
   try {
     if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
       throw new Error('Missing stripe signature or webhook secret');
@@ -21,13 +22,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Webhook Error' }, { status: 400 });
   }
 
+  console.log('Received event:', event.type);
+
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
 
       // Calculate credits to add
       const amountPaid = session.amount_total! / 100; // Convert from cents to dollars
-      const creditsToAdd = amountPaid * 10; // 10 credits per dollar
+      const creditsToAdd = amountPaid * 10; // Assuming 10 credits per dollar
 
       // Update user credits in Supabase
       const userId = session.client_reference_id; // Get userId from the session
@@ -54,11 +57,6 @@ export async function POST(request: Request) {
         console.error('Error updating user credits:', updateError);
         return NextResponse.json({ error: 'Failed to update user credits' }, { status: 500 });
       }
-
-      // Mark this session as processed
-      await supabase
-        .from('processed_sessions')
-        .insert({ session_id: session.id, user_id: userId });
 
       console.log(`Credits updated for user ${userId}: ${creditsToAdd}`);
       break;

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       const creditsToAdd = amountPaid * 10; // 10 credits per dollar
 
       // Update user credits in Supabase
-      const userId = session.client_reference_id; // Assuming you set this when creating the session
+      const userId = session.client_reference_id; // Get userId from the session
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits')

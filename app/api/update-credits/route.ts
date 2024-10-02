@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (session.payment_status === 'paid') {
       // Calculate the number of credits based on the amount paid
       const amountPaid = session.amount_total! / 100; // Convert from cents to dollars
-      const creditsToAdd = amountPaid * 10; // Assuming 1 credit = $0.10
+      const creditsToAdd = amountPaid * 10; // 10 credits per dollar
 
       // Update user credits in Supabase
       const { data, error } = await supabase

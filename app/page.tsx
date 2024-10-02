@@ -129,7 +129,7 @@ export default function AdvancedTextToImageGenerator() {
           toast.success(`Credits updated successfully! New balance: ${data.newCredits}`);
           setCreditUpdateProcessed(true);
           // Clear the session_id from the URL
-          router.replace('/');
+          router.replace(window.location.pathname); // This will remove the session_id from the URL
         } else {
           toast.error('Failed to update credits. Please contact support.');
         }

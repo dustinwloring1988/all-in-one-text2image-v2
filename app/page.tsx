@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { supabase } from '@/lib/supabase'
+import { supabase, updateUserCredits } from '@/lib/supabase'
 import { loadStripe } from '@stripe/stripe-js'
 
 type User = {
@@ -108,9 +108,13 @@ export default function AdvancedTextToImageGenerator() {
       // Payment was successful
       setShowTopOffModal(false);
       setShowSuccessModal(true);
-      // Here you should also update the user's credits in your database and local state
-      // For example:
-      // updateUserCredits(sessionId);
+      if (user) {
+        // Fetch the updated credit amount from the server
+        fetchUserCredits(user.id).then((newCredits) => {
+          setUser({ ...user, credits: newCredits });
+          toast.success(`Credits updated successfully! New balance: ${newCredits}`);
+        });
+      }
     }
   }, [])
 
@@ -327,6 +331,14 @@ export default function AdvancedTextToImageGenerator() {
     } catch (error) {
       console.error('Error buying credits:', error);
       toast.error('Failed to process payment. Please try again.');
+    }
+  };
+
+  const handleCreditUpdate = async (creditAmount: number) => {
+    if (user) {
+      const newCredits = await updateUserCredits(user.id, creditAmount);
+      setUser({ ...user, credits: newCredits });
+      toast.success(`Credits updated successfully! New balance: ${newCredits}`);
     }
   };
 

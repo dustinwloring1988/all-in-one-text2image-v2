@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
-import { updateUserCredits } from '@/lib/supabase';
+import { updateUserCredits, completeOrder } from '@/lib/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-09-30.acacia',
@@ -27,12 +27,12 @@ export async function POST(req: Request) {
 
     if (userId && credits) {
       try {
-        // Update user credits in Supabase
-        const newCredits = await updateUserCredits(userId, credits);
+        // Complete the order and update user credits
+        const newCredits = await completeOrder(userId, credits);
         console.log(`Credits updated for user ${userId}: +${credits}. New balance: ${newCredits}`);
       } catch (error) {
-        console.error('Error updating user credits:', error);
-        return NextResponse.json({ error: 'Failed to update user credits' }, { status: 500 });
+        console.error('Error completing order:', error);
+        return NextResponse.json({ error: 'Failed to complete order' }, { status: 500 });
       }
     }
   }

@@ -31,3 +31,10 @@ export const updateUserCredits = async (userId: string, amount: number) => {
     throw error;
   }
 };
+
+export const completeOrder = async (userId: string, amount: number) => {
+  // Call updateUserCredits to update the user's credits
+  const newCredits = await updateUserCredits(userId, amount);
+  // Additional logic for completing the order can be added here
+  return newCredits;
+};
